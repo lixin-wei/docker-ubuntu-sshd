@@ -35,7 +35,7 @@ ENTRYPOINT ["entry_point.sh"]
 CMD    ["/usr/sbin/sshd", "-D", "-e"]
 
 # -----------custom libs------------
-RUN apt install -y tzdata zsh fzf git tmux vim net-tools curl && \
+RUN apt update && apt install -y tzdata zsh fzf git tmux vim net-tools curl && \
     apt clean
 
 # zsh
@@ -47,6 +47,18 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
     git clone --depth=1 https://github.com/mbenford/zsh-tmux-auto-title ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-tmux-auto-title
 # oh-my-zsh config
 COPY zshrc /root/.zshrc
+SHELL ["/usr/bin/zsh", "-c"]
 # vimrc
 RUN wget https://raw.githubusercontent.com/amix/vimrc/master/vimrcs/basic.vim -O /root/.vimrc
 
+#pyenv
+RUN apt update && apt install -y build-essential libssl-dev zlib1g-dev \
+    libbz2-dev libreadline-dev libsqlite3-dev curl \
+    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev && \
+    apt clean
+
+RUN curl https://pyenv.run | bash
+RUN echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc && \
+    echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc && \
+    echo 'eval "$(pyenv init -)"' >> ~/.zshrc
+RUN source /root/.zshrc && pyenv install 3.10.10 && pyenv global 3.10.10
