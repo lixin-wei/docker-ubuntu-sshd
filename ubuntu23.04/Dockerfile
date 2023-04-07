@@ -1,9 +1,9 @@
 FROM ubuntu:23.04
 MAINTAINER "Lixin Wei"
 
-# common libs
+# basic libs
 RUN apt update && \
-    apt install -y apt-utils man-db && \ 
+    apt install -y apt-utils man-db cron && \ 
     yes | unminimize && \
     apt upgrade -y && \
     apt clean
@@ -16,13 +16,7 @@ RUN mkdir /run/sshd; \
     apt clean;
 
 # entrypoint
-RUN { \
-    echo '#!/bin/bash -eu'; \
-    echo 'ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime'; \
-    echo 'echo "root:${ROOT_PASSWORD}" | chpasswd'; \
-    echo 'exec "$@"'; \
-    } > /usr/local/bin/entry_point.sh; \
-    chmod +x /usr/local/bin/entry_point.sh;
+COPY entry_point.sh /usr/local/bin/entry_point.sh
 
 ENV TZ Asia/Shanghai
 
@@ -62,3 +56,4 @@ RUN echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.zshrc && \
     echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.zshrc && \
     echo 'eval "$(pyenv init -)"' >> ~/.zshrc
 RUN source /root/.zshrc && pyenv install 3.10.10 && pyenv global 3.10.10
+
